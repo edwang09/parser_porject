@@ -13,6 +13,6 @@ and follow command-line instructions
 * It does not takes higher degree inputs such as 2x^2. 
 * It does not take non-integers such as 3.5 from input.
 
-# Run nfa2dfa using node.js:
+# HW5 - Run nfa2dfa using node.js:
 Please install node.js and run with command "node nfa2dfa".
 The NFA object is hardcoded into the js file and result printed to console for simplicity.
