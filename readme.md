@@ -8,7 +8,9 @@ python calculator.py
 ```
 and follow command-line instructions
 ## Limitations
-This calculator currently does not support division. Also, it only takes variables that has only one charactor(e.g. x,y not var, Vs etc.). It does not takes higher degree inputs such as 2x^2. Finally it does not take non-integers such as 3.5 from input.
+* This calculator currently does not support division. 
+* It only takes variables that has only one charactor(e.g. x,y not var, Vs etc.). 
+* It does not takes higher degree inputs such as 2x^2. Finally it does not take non-integers such as 3.5 from input.
 
 # Run nfa2dfa using node.js:
 Please install node.js and run with command "node nfa2dfa".
