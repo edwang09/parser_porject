@@ -1,8 +1,9 @@
 import pynetree
+import sys
 
 class Calculator(pynetree.Parser):
     stack = []
-
+    answer = ""
     def __init__(self):
         super(Calculator, self).__init__(
             """
@@ -12,88 +13,99 @@ class Calculator(pynetree.Parser):
 
                 @factor: int var | int | var;
 
-                @mul: term '*' factor;
-                term: mul | factor;
+                @mul: term '*' term;
+                term: mul | factor | '(' expr ')';
 
                 @add: expr '+' term;
-                expr$: add | term;
+                @sub: expr '-' term;
+                expr$: add | sub | term;
 
                 @calc$: expr;
             """)
 
     def post_int(self, node):
-        print("int")
         self.stack.append(float(node.match))
     def post_var(self, node):
-        print("variable")
         self.stack.append(node.match)
     def post_factor(self, node):
         result = dict()
         first = self.stack.pop()
-        second = self.stack.pop()
-        # print(first)
-        # print(second)
+        if self.stack == []:
+            second = ""
+        else:
+            second = self.stack.pop()
         if (type(first) is str and type(second) is float ):
-            # print("int var")
             result[first]=second
         elif(type(first) is str):
-            # print("var")
             result[first]=1
             self.stack.append(second)
         else:
-            # print("int")
             result["const"]=first
             self.stack.append(second)
-        
-        print(result)
         self.stack.append(result)
-        print(self.stack)
-
     def post_add(self, node):
         first = self.stack.pop()
         second = self.stack.pop()
         result = dict(first)
         for key in second:
-            print(key)
             if (key in result.keys()):
                 result[key]+=second[key]
             else:
                 result[key]=second[key]
-        print(result)
         self.stack.append(result)
-        # self.stack.append(self.stack.pop() + self.stack.pop())
 
-    def post_sub(self, node):
-        pass
-        # x = self.stack.pop()
-        # self.stack.append(self.stack.pop() - x)
+    def post_sub(self, node):        
+        first = self.stack.pop()
+        second = self.stack.pop()
+        result = dict(second)
+        for key in first:
+            if (key in result.keys()):
+                result[key]-=first[key]
+            else:
+                result[key]=-1.0*first[key]
+        self.stack.append(result)
 
-    def post_mul(self, node):
+    def post_mul(self, node): 
+        first = self.stack.pop()
+        second = self.stack.pop()
+        result = dict()
+        for key1 in first:
+            for key2 in second:
+                keylist = list(filter(lambda x: x!="const", [key1,key2]))
+                keylist.sort()
+                key = "".join(keylist)
+                if key == "":
+                    key = "const"
+                result[key] = first[key1] * second[key2]
+        self.stack.append(result)
         pass
-        # self.stack.append(self.stack.pop() * self.stack.pop())
 
-    def post_div(self, node):
-        pass
-        # x = self.stack.pop()
-        # self.stack.append(self.stack.pop() / x)
 
     def post_calc(self, node):
-        print(self.stack.pop())
+        result = self.stack.pop()
+        keylist = list(filter(lambda x: x!="const", result.keys()))
+        answer = ""
+        for key in keylist:
+            if answer == "":
+                answer = str(int(result[key])) + key 
+            else:
+                answer += " + " + str(int(result[key])) + key 
+        answer = answer + " + " + str(int(result["const"]))
+        self.answer = answer
 
-c = Calculator()
-c.traverse(c.parse("3s + 4"))
-# p = pynetree.Parser("""
-#     %skip /\s+/;
-#     @int /\d+/;
-#     @var /[a-z]/;
 
-#     @singleterm: int var | var;
-#     factor: int var | '(' expr ')' | int | var;
+if __name__ == "__main__":
 
-#     @mul: term '*' factor;
-#     term: mul | factor;
+    c = Calculator()
+    print("Please enter the Polynomial you want to calculate(e.g. x + ( 2y + 3 )* ( 3s + 4 ) * 5):")
+    for line in sys.stdin: 
+        if line == "\n":   
+            line = "x + ( 2y + 3 )* ( 3s + 4 ) * 5"
+        try:
+            c.traverse(c.parse(line))
+            print("Result :")
+            print(line + " = " + c.answer)
+        except:
+            print("An error occured")
+        print("\nPlease enter the Polynomial you want to calculate(e.g. x + ( 2y + 3 )* ( 3s + 4 ) * 5):")
 
-#     @add: expr '+' term;
-#     expr$: add | term;
-# """)
-# p.parse("x + 2y * ( 3s + 4 ) * 5").dump()
